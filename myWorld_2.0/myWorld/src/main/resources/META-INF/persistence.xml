@@ -5,6 +5,14 @@
     <class>com.myprojects.myworld.hibernate.pojo.Users_1</class>
     <class>com.myprojects.myworld.hibernate.pojo.Users</class>
     <class>com.myprojects.myworld.hibernate.pojo.Friends</class>
+    <class>com.myprojects.myworld.hibernate.pojo.Education</class>
+    <class>com.myprojects.myworld.hibernate.pojo.Board</class>
+    <class>com.myprojects.myworld.hibernate.pojo.Pages</class>
+    <class>com.myprojects.myworld.hibernate.pojo.Companies</class>
+    <class>com.myprojects.myworld.hibernate.pojo.Ratings</class>
+    <class>com.myprojects.myworld.hibernate.pojo.Groups</class>
+    <class>com.myprojects.myworld.hibernate.pojo.Comment</class>
+    <class>com.myprojects.myworld.hibernate.pojo.Locations</class>
     <exclude-unlisted-classes>false</exclude-unlisted-classes>
     <properties>
       <property name="javax.persistence.jdbc.url" value="jdbc:mysql://localhost:3306/myWorld"/>

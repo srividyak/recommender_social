@@ -6,5 +6,6 @@
     <property name="hibernate.connection.driver_class">com.mysql.jdbc.Driver</property>
     <property name="hibernate.connection.url">jdbc:mysql://localhost:3306/myWorld</property>
     <property name="hibernate.connection.username">srividyak</property>
+    <property name="hibernate.current_session_context_class">thread</property>
   </session-factory>
 </hibernate-configuration>

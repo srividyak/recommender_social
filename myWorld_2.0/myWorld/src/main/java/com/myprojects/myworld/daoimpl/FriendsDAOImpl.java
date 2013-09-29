@@ -7,8 +7,10 @@ package com.myprojects.myworld.daoimpl;
 import com.myprojects.myworld.dao.FriendsDAO;
 import com.myprojects.myworld.hibernate.pojo.Friends;
 import com.myprojects.myworld.hibernate.pojo.Users;
+import java.util.Date;
 import java.util.List;
 import org.hibernate.Query;
+import org.hibernate.Transaction;
 import org.hibernate.classic.Session;
 import org.springframework.orm.hibernate3.HibernateTemplate;
 
@@ -17,15 +19,11 @@ import org.springframework.orm.hibernate3.HibernateTemplate;
  * @author srividyak
  */
 public class FriendsDAOImpl implements FriendsDAO {
-    
-    /** relation
-     * 0 => send
-     * 1 => accept => friends only in this state
-     * 2 => view
-     * 3 => decline from me to friend
-     * 4 => decline from friend to me
-     */
 
+    /**
+     * relation 0 => send 1 => accept => friends only in this state 2 => view 3
+     * => decline from me to friend 4 => decline from friend to me
+     */
     private HibernateTemplate template;
 
     public void setTemplate(HibernateTemplate template) throws UserException {
@@ -59,9 +57,10 @@ public class FriendsDAOImpl implements FriendsDAO {
 
     /**
      * action from me to friend
+     *
      * @param me
      * @param friend
-     * @param action 
+     * @param action
      */
     public void handleFriendRelation(Users me, Users friend, String action) {
         Session session = this.template.getSessionFactory().openSession();
@@ -72,12 +71,12 @@ public class FriendsDAOImpl implements FriendsDAO {
         Friends direct = getRelation(me, friend);
         if (direct != null) {
             if (action.equals("send")) {
-                if(!direct.getRelation().equals("0") && !direct.getRelation().equals("1")) {
+                if (!direct.getRelation().equals("0") && !direct.getRelation().equals("1")) {
                     friendsQuery = "update friends set relation='0',viewCount=viewCount+1 where myUuid=? and friendUuid=?";
                     friendsTblQuery = session.createQuery(friendsQuery);
                 }
             } else if (action.equals("decline")) {
-                if(direct.getRelation().equals("1")) {
+                if (direct.getRelation().equals("1")) {
                     friendsQuery = "update friends set relation='3',viewCount=viewCount+1 where myUuid=? and friendUuid=?";
                     friendsTblQuery = session.createQuery(friendsQuery);
                     myUserTblQuery = session.createQuery("update users set friendsCount=friendsCount-1 where uuid=?");
@@ -88,41 +87,72 @@ public class FriendsDAOImpl implements FriendsDAO {
             } else if (action.equals("view")) {
                 friendsQuery = "update friends set viewCount=viewCount+1 where myUuid=? and friendUuid=?";
                 friendsTblQuery = session.createQuery(friendsQuery);
-            } else if(action.equals("withdraw")) {
-                if(direct.getRelation().equals("0")) {
+            } else if (action.equals("withdraw")) {
+                if (direct.getRelation().equals("0")) {
                     friendsQuery = "update friends set relation='2',viewCount=viewCount+1 where myUuid=? and friendUuid=?";
                     friendsTblQuery = session.createQuery(friendsQuery);
                 }
             }
-            if(friendsTblQuery != null) {
+            if (friendsTblQuery != null) {
                 friendsTblQuery.setString(1, myUuid);
                 friendsTblQuery.setString(2, friendUuid);
             }
         } else {
             Friends opposite = getRelation(friend, me);
-            if(opposite != null) {
+            if (opposite != null) {
                 if (action.equals("send")) {
-                    if(!opposite.getRelation().equals("0") && !opposite.getRelation().equals("1")) {
-                        
+                    if (!opposite.getRelation().equals("0") && !opposite.getRelation().equals("1")) {
+                        friendsQuery = "update friends set relation='0',viewCount=reverseViewCount+1,reverseViewCount=viewCountmyUuid=friendUuid,friendUuid=myUuid where myUuid=? and friendUuid=?";
+                        friendsTblQuery = session.createQuery(friendsQuery);
+                        friendsTblQuery.setString(1, friendUuid);
+                        friendsTblQuery.setString(2, myUuid);
                     }
                 } else if (action.equals("accept")) {
-
+                    if (opposite.getRelation().equals("0")) {
+                        friendsQuery = "update friends set relation='1',reverseViewCount=reverseViewCount+1 where myUuid=? and friendUuid=?";
+                        friendsTblQuery = session.createQuery(friendsQuery);
+                        friendsTblQuery.setString(1, friendUuid);
+                        friendsTblQuery.setString(2, myUuid);
+                        myUserTblQuery = session.createQuery("update users set friendsCount=friendsCount-1 where uuid=?");
+                        myUserTblQuery.setString(1, myUuid);
+                        friendUserTblQuery = session.createQuery("update users set friendsCount=friendsCount-1 where uuid=?");
+                        friendUserTblQuery.setString(1, friendUuid);
+                    }
                 } else if (action.equals("decline")) {
-
+                    friendsQuery = "update friends set relation='3',reverseViewCount=reverseViewCount+1 where myUuid=? and friendUuid=?";
+                    friendsTblQuery = session.createQuery(friendsQuery);
+                    friendsTblQuery.setString(1, friendUuid);
+                    friendsTblQuery.setString(2, myUuid);
                 } else if (action.equals("view")) {
-
+                    friendsQuery = "update friends set reverseViewCount=reverseViewCount+1 where myUuid=? and friendUuid=?";
+                    friendsTblQuery = session.createQuery(friendsQuery);
+                    friendsTblQuery.setString(1, friendUuid);
+                    friendsTblQuery.setString(2, myUuid);
                 }
             } else {
                 if (action.equals("send")) {
-                
-                } else if (action.equals("accept")) {
-
-                } else if (action.equals("decline")) {
-
+                    friendsQuery = "insert into friends (myUuid,friendUuid,viewCount,timestamp,timeSent,relation) values (?,?,?,?,?,?)";
+                    friendsTblQuery = session.createQuery(friendsQuery);
+                    friendsTblQuery.setString(1, myUuid);
+                    friendsTblQuery.setString(2, friendUuid);
+                    friendsTblQuery.setLong(3,1);
+                    friendsTblQuery.setLong(4,(new Date()).getTime());
+                    friendsTblQuery.setLong(5,(new Date()).getTime());
+                    friendsTblQuery.setString(6, "0");
                 } else if (action.equals("view")) {
-
+                    friendsQuery = "insert into friends (myUuid,friendUuid,viewCount,timestamp,timeSent,relation) values (?,?,?,?,?,?)";
+                    friendsTblQuery = session.createQuery(friendsQuery);
+                    friendsTblQuery.setString(1, myUuid);
+                    friendsTblQuery.setString(2, friendUuid);
+                    friendsTblQuery.setLong(3,1);
+                    friendsTblQuery.setLong(4,(new Date()).getTime());
+                    friendsTblQuery.setLong(5,(new Date()).getTime());
+                    friendsTblQuery.setString(6, "2");
                 }
             }
+        }
+        if(friendsTblQuery != null) {
+            Transaction transaction = session.beginTransaction();
         }
     }
 }

@@ -5,15 +5,18 @@
 package com.myprojects.myworld.daoimpl;
 
 import com.myprojects.myworld.dao.UsersDAO;
-import com.myprojects.myworld.hibernate.pojo.Friends;
 import com.myprojects.myworld.hibernate.pojo.Users;
 import java.util.List;
+import org.hibernate.classic.Session;
 import org.springframework.orm.hibernate3.HibernateTemplate;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  *
  * @author srividyak
  */
+//@Transactional
+//@Service
 public class UsersDAOImpl implements UsersDAO {
 
     private HibernateTemplate template;
@@ -29,7 +32,8 @@ public class UsersDAOImpl implements UsersDAO {
 
     public void updateUser(Users u) throws UserException {
         try {
-            u.update(template.getSessionFactory().openSession());
+            Session session = template.getSessionFactory().getCurrentSession();
+            u.update(session);
         } catch (Exception e) {
             throw new UserException(e);
         }

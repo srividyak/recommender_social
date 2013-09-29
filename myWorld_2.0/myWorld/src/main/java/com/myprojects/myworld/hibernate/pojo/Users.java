@@ -5,19 +5,17 @@
 package com.myprojects.myworld.hibernate.pojo;
 
 import com.google.gson.Gson;
+import com.myprojects.myworld.daoimpl.UserException;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Type;
-import java.math.BigInteger;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.persistence.Basic;
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -25,21 +23,21 @@ import javax.persistence.Id;
 import javax.persistence.Lob;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
-import javax.persistence.OneToMany;
 import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlTransient;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.hibernate.HibernateException;
 import org.hibernate.Query;
+import org.hibernate.Transaction;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.classic.Session;
 import org.hibernate.engine.SessionImplementor;
 import org.hibernate.id.IdentifierGenerator;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  *
@@ -48,6 +46,7 @@ import org.hibernate.id.IdentifierGenerator;
 @Entity
 @Table(name = "users")
 @XmlRootElement
+@Transactional
 @NamedQueries({
     @NamedQuery(name = "Users.findAll", query = "SELECT u FROM Users u"),
     @NamedQuery(name = "Users.findByFirstName", query = "SELECT u FROM Users u WHERE u.firstName = :firstName"),
@@ -68,10 +67,6 @@ public class Users implements Serializable, IdentifierGenerator {
     private Long timestamp;
     @Column(name = "updatedTimestamp")
     private Long updatedTimestamp;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "friends")
-    private List<Friends> friendsList;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "users1")
-    private List<Friends> friendsList1;
     @Basic(optional = false)
     @Column(name = "firstName")
     private String firstName;
@@ -317,8 +312,7 @@ public class Users implements Serializable, IdentifierGenerator {
 
     @Override
     public String toString() {
-        Gson gson = new Gson();
-        return gson.toJson(this);
+        return new Gson().toJson(this);
     }
 
     @PreUpdate
@@ -327,6 +321,11 @@ public class Users implements Serializable, IdentifierGenerator {
         this.setUpdatedTimestamp(new Date().getTime());
     }
     
+    @PrePersist
+    public void setCreateTime() {
+        this.setTimestamp(new Date().getTime());
+    }
+
     public static Users fromJson(String json) {
         Gson gson = new Gson();
         return gson.fromJson(json, Users.class);
@@ -334,78 +333,87 @@ public class Users implements Serializable, IdentifierGenerator {
 
     /**
      * updates the persistent object based on non null properties of the object
-     * @param session 
+     *
+     * @param session
      */
-    public void update(Session session) {
-        Class clazz = this.getClass();
-        this.setLastUpdate();
-        Field fields[] = clazz.getDeclaredFields();
-        String queryBeg = "update Users set ";
-        String queryEnd = " where uuid = :uuid";
-        String queryParams = "", queryString = "";
-        Query query;
-        List<Class> qParamsTypes = new LinkedList<Class>();
-        List<Object> qParamsValues = new LinkedList<Object>();
-        for (Field f : fields) {
-            String fieldName = f.getName();
-            Class fieldClass = f.getType();
-            String modifiedFieldName = fieldName;
-            if (fieldName.length() > 1) {
-                modifiedFieldName = fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
-            } else {
-                modifiedFieldName = fieldName.toUpperCase();
-            }
-            String methodName = "get" + modifiedFieldName;
-            try {
-                Method method = clazz.getMethod(methodName);
+    public void update(Session session) throws UserException {
+        Transaction tx = session.beginTransaction();
+        try {
+            Class clazz = this.getClass();
+            this.setLastUpdate();
+            Field fields[] = clazz.getDeclaredFields();
+            String queryBeg = "update Users set ";
+            String queryEnd = " where uuid = :uuid";
+            String queryParams = "", queryString = "";
+            Query query;
+            List<Class> qParamsTypes = new LinkedList<Class>();
+            List<Object> qParamsValues = new LinkedList<Object>();
+            for (Field f : fields) {
+                String fieldName = f.getName();
+                Class fieldClass = f.getType();
+                String modifiedFieldName = fieldName;
+                if (fieldName.length() > 1) {
+                    modifiedFieldName = fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
+                } else {
+                    modifiedFieldName = fieldName.toUpperCase();
+                }
+                String methodName = "get" + modifiedFieldName;
                 try {
-                    Object o = method.invoke(this);
-                    if (o != null) {
-                        qParamsTypes.add(fieldClass);
-                        qParamsValues.add(o);
-                        queryParams += fieldName + " = ?" + ",";
+                    Method method = clazz.getMethod(methodName);
+                    try {
+                        Object o = method.invoke(this);
+                        if (o != null) {
+                            qParamsTypes.add(fieldClass);
+                            qParamsValues.add(o);
+                            queryParams += fieldName + " = ?" + ",";
+                        }
+                    } catch (IllegalAccessException ex) {
+                        Logger.getLogger(Users.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (IllegalArgumentException ex) {
+                        Logger.getLogger(Users.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (InvocationTargetException ex) {
+                        Logger.getLogger(Users.class.getName()).log(Level.SEVERE, null, ex);
                     }
-                } catch (IllegalAccessException ex) {
+                } catch (NoSuchMethodException ex) {
                     Logger.getLogger(Users.class.getName()).log(Level.SEVERE, null, ex);
-                } catch (IllegalArgumentException ex) {
-                    Logger.getLogger(Users.class.getName()).log(Level.SEVERE, null, ex);
-                } catch (InvocationTargetException ex) {
+                } catch (SecurityException ex) {
                     Logger.getLogger(Users.class.getName()).log(Level.SEVERE, null, ex);
                 }
-            } catch (NoSuchMethodException ex) {
-                Logger.getLogger(Users.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (SecurityException ex) {
-                Logger.getLogger(Users.class.getName()).log(Level.SEVERE, null, ex);
             }
-        }
-        int qParamsLen = queryParams.length();
-        if (qParamsLen > 0) { //remove trailing comma
-            queryParams = queryParams.substring(0, qParamsLen - 1);
-            queryString = queryBeg + queryParams + queryEnd;
-            query = session.createQuery(queryString);
-            int index = 0;
-            for (Class c : qParamsTypes) {
-                if (c.equals(java.lang.Integer.class)) {
-                    query.setInteger(index, (Integer) qParamsValues.get(index));
-                } else if (c.equals(java.lang.String.class)) {
-                    query.setString(index, (String) qParamsValues.get(index));
-                } else if (c.equals(java.lang.Float.class)) {
-                    query.setFloat(index, (Float) qParamsValues.get(index));
-                } else if (c.equals(java.lang.Long.class)) {
-                    query.setLong(index, (Long) qParamsValues.get(index));
-                } else if(c.equals(java.lang.Boolean.class) || c.equals(boolean.class)) {
-                    query.setBoolean(index, (Boolean) qParamsValues.get(index));
+            int qParamsLen = queryParams.length();
+            if (qParamsLen > 0) { //remove trailing comma
+                queryParams = queryParams.substring(0, qParamsLen - 1);
+                queryString = queryBeg + queryParams + queryEnd;
+                query = session.createQuery(queryString);
+                int index = 0;
+                for (Class c : qParamsTypes) {
+                    if (c.equals(java.lang.Integer.class)) {
+                        query.setInteger(index, (Integer) qParamsValues.get(index));
+                    } else if (c.equals(java.lang.String.class)) {
+                        query.setString(index, (String) qParamsValues.get(index));
+                    } else if (c.equals(java.lang.Float.class)) {
+                        query.setFloat(index, (Float) qParamsValues.get(index));
+                    } else if (c.equals(java.lang.Long.class)) {
+                        query.setLong(index, (Long) qParamsValues.get(index));
+                    } else if (c.equals(java.lang.Boolean.class) || c.equals(boolean.class)) {
+                        query.setBoolean(index, (Boolean) qParamsValues.get(index));
+                    }
+                    index++;
                 }
-                index++;
+                query.setParameter("uuid", this.getUuid());
+                query.executeUpdate();
+                tx.commit();
             }
-            query.setParameter("uuid", this.getUuid());
-            query.executeUpdate();
+        } catch (Exception e) {
+            tx.rollback();
+            throw new UserException(e);
         }
+        //TODO: remove this once transactions work fine
         session.close();
     }
 
     public Serializable generate(SessionImplementor session, Object object) throws HibernateException {
-        if(this.uuid == null) {
+        if (this.uuid == null) {
             this.generateUUID();
         }
         return uuid;
@@ -426,5 +434,4 @@ public class Users implements Serializable, IdentifierGenerator {
     public void setUpdatedTimestamp(Long updatedTimestamp) {
         this.updatedTimestamp = updatedTimestamp;
     }
-
 }
