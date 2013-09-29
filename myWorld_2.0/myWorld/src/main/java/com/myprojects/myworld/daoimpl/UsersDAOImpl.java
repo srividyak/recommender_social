@@ -4,6 +4,7 @@
  */
 package com.myprojects.myworld.daoimpl;
 
+import com.myprojects.myworld.exception.UserException;
 import com.myprojects.myworld.dao.UsersDAO;
 import com.myprojects.myworld.hibernate.pojo.Users;
 import java.util.List;
@@ -65,6 +66,10 @@ public class UsersDAOImpl implements UsersDAO {
         } catch (Exception e) {
             throw new UserException(e);
         }
+    }
+
+    public List<Users> searchUsers(String key) throws UserException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
 }

@@ -4,8 +4,9 @@
  */
 package com.myprojects.myworld.dao;
 
-import com.myprojects.myworld.daoimpl.BoardException;
+import com.myprojects.myworld.exception.BoardException;
 import com.myprojects.myworld.hibernate.pojo.Board;
+import com.myprojects.myworld.hibernate.pojo.Comment;
 import java.util.List;
 
 /**
@@ -24,4 +25,11 @@ public interface BoardDAO {
     
     public void deleteBoard(String id) throws BoardException;
     
+    public List<Comment> getComments(String id) throws BoardException;
+    
+    public List<Comment> getTopComments(String id) throws BoardException;
+    
+    public List<Board> searchBoards(String pattern) throws BoardException;
+    
+    public List<Board> getUserBoards(String uuid) throws BoardException;
 }

@@ -4,7 +4,7 @@
  */
 package com.myprojects.myworld.dao;
 
-import com.myprojects.myworld.daoimpl.UserException;
+import com.myprojects.myworld.exception.UserException;
 import com.myprojects.myworld.hibernate.pojo.Users;
 import java.util.List;
 
@@ -21,4 +21,6 @@ public interface UsersDAO {
     public void updateUser(Users u) throws UserException;
     
     public void createUser(Users u) throws UserException;
+    
+    public List<Users> searchUsers(String key) throws UserException;
 }

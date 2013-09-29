@@ -4,6 +4,7 @@
  */
 package com.myprojects.myworld.daoimpl;
 
+import com.myprojects.myworld.exception.UserException;
 import com.myprojects.myworld.dao.FriendsDAO;
 import com.myprojects.myworld.hibernate.pojo.Friends;
 import com.myprojects.myworld.hibernate.pojo.Users;

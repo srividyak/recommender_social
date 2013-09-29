@@ -4,8 +4,10 @@
  */
 package com.myprojects.myworld.daoimpl;
 
+import com.myprojects.myworld.exception.BoardException;
 import com.myprojects.myworld.dao.BoardDAO;
 import com.myprojects.myworld.hibernate.pojo.Board;
+import com.myprojects.myworld.hibernate.pojo.Comment;
 import java.util.List;
 import org.hibernate.classic.Session;
 import org.springframework.orm.hibernate3.HibernateTemplate;
@@ -68,6 +70,22 @@ public class BoardDAOImpl implements BoardDAO {
     }
 
     public void deleteBoard(String id) throws BoardException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    public List<Comment> getComments(String id) throws BoardException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    public List<Comment> getTopComments(String id) throws BoardException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    public List<Board> searchBoards(String pattern) throws BoardException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    public List<Board> getUserBoards(String uuid) throws BoardException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

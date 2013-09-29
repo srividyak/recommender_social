@@ -6,7 +6,7 @@ package com.myprojects.myworld.controller;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.myprojects.myworld.daoimpl.UserException;
+import com.myprojects.myworld.exception.UserException;
 import com.myprojects.myworld.daoimpl.UsersDAOImpl;
 import com.myprojects.myworld.hibernate.pojo.Users;
 import java.util.HashMap;

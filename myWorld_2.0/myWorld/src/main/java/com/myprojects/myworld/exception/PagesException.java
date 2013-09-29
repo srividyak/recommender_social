@@ -2,15 +2,15 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.myprojects.myworld.daoimpl;
+package com.myprojects.myworld.exception;
 
 /**
  *
  * @author srividyak
  */
-public class UserException extends Exception {
-
-    public UserException(Exception e) {
+public class PagesException extends Exception {
+    
+    public PagesException(Exception e) {
         e.printStackTrace();
     }
 }

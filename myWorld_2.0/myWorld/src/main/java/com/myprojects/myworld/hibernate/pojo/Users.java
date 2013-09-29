@@ -5,7 +5,7 @@
 package com.myprojects.myworld.hibernate.pojo;
 
 import com.google.gson.Gson;
-import com.myprojects.myworld.daoimpl.UserException;
+import com.myprojects.myworld.exception.UserException;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
