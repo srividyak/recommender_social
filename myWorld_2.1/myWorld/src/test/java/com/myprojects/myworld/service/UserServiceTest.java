@@ -4,13 +4,15 @@
  */
 package com.myprojects.myworld.service;
 
+import com.myprojects.myworld.pojos.User;
 import com.myprojects.myworld.service.user.UserService;
+import java.util.Date;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
@@ -32,6 +34,7 @@ public class UserServiceTest {
 
     @BeforeClass
     public static void setUpClass() {
+        System.out.println("in setup class");
     }
 
     @AfterClass
@@ -40,6 +43,7 @@ public class UserServiceTest {
 
     @Before
     public void setUp() {
+        System.out.println("in setup method");
     }
 
     @After
@@ -48,10 +52,10 @@ public class UserServiceTest {
 
     @Test
     public void testCreateUser() {
-//        User newUser = new User("srividya", "krishnamurthy", new Date(606322159), false, "vidya.vasishtha5@gmail.com");
-//        User insertedUser = service.createUser(newUser);
-//        User resUser = service.getUser(insertedUser.getUuid());
-//        assertTrue(resUser.getUuid().equals(insertedUser.getUuid()));
-        assertTrue(true);
+        User newUser = new User("srividya", "krishnamurthy", new Date(606322159), false, "vidya.vasishtha5@gmail.com");
+        User insertedUser = service.createUser(newUser);
+        User resUser = service.getUser(insertedUser.getUuid());
+        Assert.assertTrue(resUser.getUuid().equals(insertedUser.getUuid()));
+//        Assert.assertTrue(true);
     }
 }
